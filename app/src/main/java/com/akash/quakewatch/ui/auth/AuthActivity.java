@@ -201,6 +201,8 @@ public class AuthActivity extends AppCompatActivity {
         });
     }
 
+    private static final String DEFAULT_WEB_CLIENT_ID = "64073902603-t2sgh00t2hq9um129v5a64u7vu91qkj0.apps.googleusercontent.com";
+
     private void initiateGoogleSignIn() {
         clearErrors();
 
@@ -208,12 +210,11 @@ public class AuthActivity extends AppCompatActivity {
         try {
             webClientId = getString(R.string.default_web_client_id);
         } catch (Exception e) {
-            webClientId = "";
+            webClientId = DEFAULT_WEB_CLIENT_ID;
         }
 
         if (TextUtils.isEmpty(webClientId) || webClientId.contains("mock")) {
-            showBannerError("Google sign-in requires real google-services.json from your Firebase project.");
-            return;
+            webClientId = DEFAULT_WEB_CLIENT_ID;
         }
 
         setLoading(true);
@@ -255,8 +256,19 @@ public class AuthActivity extends AppCompatActivity {
                     @Override
                     public void onError(GetCredentialException e) {
                         setLoading(false);
-                        if (!(e instanceof GetCredentialCancellationException)) {
-                            showBannerError("Google sign-in error: " + e.getMessage());
+                        if (e instanceof GetCredentialCancellationException) {
+                            // User dismissed bottom sheet - silent return
+                            return;
+                        }
+                        String msg = e.getMessage() != null ? e.getMessage() : "";
+                        if (e instanceof androidx.credentials.exceptions.NoCredentialException
+                                || msg.contains("No credentials")
+                                || msg.contains("16")) {
+                            showBannerError("No Google account found on device. Please sign in to Google in your phone settings or use email/password.");
+                        } else if (msg.contains("10") || msg.contains("DEVELOPER_ERROR")) {
+                            showBannerError("Google Sign-In configuration error (Code 10). Ensure Google provider is enabled in Firebase Console.");
+                        } else {
+                            showBannerError("Google sign-in error: " + msg);
                         }
                     }
                 }

@@ -22,5 +22,5 @@
     <string name="sample_time">3 h ago | 79 km deep</string>
 
     <!-- Google Sign-In Client ID -->
-    <string name="default_web_client_id" translatable="false">mock_web_client_id</string>
+    <string name="default_web_client_id" translatable="false">64073902603-t2sgh00t2hq9um129v5a64u7vu91qkj0.apps.googleusercontent.com</string>
 </resources>

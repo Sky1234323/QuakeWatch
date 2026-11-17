@@ -182,6 +182,10 @@ public class AuthRepository {
         } else if (e instanceof FirebaseNetworkException) {
             return "Unable to connect. Please verify your internet connection.";
         }
-        return e.getMessage() != null ? e.getMessage() : "An unexpected error occurred. Please try again.";
+        String msg = e != null && e.getMessage() != null ? e.getMessage() : "";
+        if (msg.contains("identity provider is not enabled") || msg.contains("OPERATION_NOT_ALLOWED")) {
+            return "Google Sign-In is not enabled in Firebase Console. Please enable it in Firebase -> Authentication -> Sign-in method.";
+        }
+        return !msg.isEmpty() ? msg : "An unexpected error occurred. Please try again.";
     }
 }
