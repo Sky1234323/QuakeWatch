@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<q:quakeml xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:catalog="http://anss.org/xmlns/catalog/0.1">
+  <eventParameters publicID="quakeml:earthquake.usgs.gov/fdsnws/event/1/query">
+    <!-- Event 1: Philippines -->
+    <event catalog:datasource="us" catalog:eventsource="us" catalog:eventid="7000ty0g" publicID="quakeml:earthquake.usgs.gov/earthquakes/eventpage/us7000ty0g">
+      <description>
+        <type>earthquake name</type>
+        <text>12 km ESE of Baculin, Philippines</text>
+      </description>
+      <origin publicID="quakeml:earthquake.usgs.gov/origin/1">
+        <time><value>2026-11-13T12:12:57.241Z</value></time>
+        <longitude><value>126.6864</value></longitude>
+        <latitude><value>7.3953</value></latitude>
+        <depth><value>79163</value></depth>
+      </origin>
+      <magnitude publicID="quakeml:earthquake.usgs.gov/magnitude/1">
+        <mag><value>4.4</value></mag>
+        <type>mb</type>
+      </magnitude>
+      <type>earthquake</type>
+    </event>
+
+    <!-- Event 2: Tonga -->
+    <event catalog:datasource="us" catalog:eventsource="us" catalog:eventid="7000txzd" publicID="quakeml:earthquake.usgs.gov/earthquakes/eventpage/us7000txzd">
+      <description>
+        <type>earthquake name</type>
+        <text>59 km WSW of Houma, Tonga</text>
+      </description>
+      <origin publicID="quakeml:earthquake.usgs.gov/origin/2">
+        <time><value>2026-11-13T11:18:12.734Z</value></time>
+        <longitude><value>-175.8541</value></longitude>
+        <latitude><value>-21.3036</value></latitude>
+        <depth><value>162780</value></depth>
+      </origin>
+      <magnitude publicID="quakeml:earthquake.usgs.gov/magnitude/2">
+        <mag><value>4.8</value></mag>
+        <type>mb</type>
+      </magnitude>
+      <type>earthquake</type>
+    </event>
+
+    <!-- Event 3: Loyalty Islands -->
+    <event catalog:datasource="us" catalog:eventsource="us" catalog:eventid="7000txz3" publicID="quakeml:earthquake.usgs.gov/earthquakes/eventpage/us7000txz3">
+      <description>
+        <type>earthquake name</type>
+        <text>southeast of the Loyalty Islands</text>
+      </description>
+      <origin publicID="quakeml:earthquake.usgs.gov/origin/3">
+        <time><value>2026-11-13T09:55:45.053Z</value></time>
+        <longitude><value>173.4492</value></longitude>
+        <latitude><value>-22.3729</value></latitude>
+        <depth><value>10000</value></depth>
+      </origin>
+      <magnitude publicID="quakeml:earthquake.usgs.gov/magnitude/3">
+        <mag><value>4.9</value></mag>
+        <type>mb</type>
+      </magnitude>
+      <type>earthquake</type>
+    </event>
+
+    <!-- Event 4: Missing magnitude (should be skipped!) -->
+    <event catalog:datasource="us" catalog:eventsource="us" catalog:eventid="7000invalid" publicID="quakeml:earthquake.usgs.gov/earthquakes/eventpage/us7000invalid">
+      <description>
+        <type>earthquake name</type>
+        <text>Invalid test earthquake with no magnitude</text>
+      </description>
+      <origin publicID="quakeml:earthquake.usgs.gov/origin/4">
+        <time><value>2026-11-13T08:00:00.000Z</value></time>
+        <longitude><value>100.0</value></longitude>
+        <latitude><value>10.0</value></latitude>
+        <depth><value>5000</value></depth>
+      </origin>
+      <type>earthquake</type>
+    </event>
+  </eventParameters>
+</q:quakeml>

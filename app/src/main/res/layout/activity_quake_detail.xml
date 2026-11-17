@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/detail_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/qw_background">
+
+    <!-- App Bar with Back & Share -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/qw_background"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_detail"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+
+            <ImageView
+                android:id="@+id/btn_back"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="start|center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:padding="8dp"
+                android:src="@drawable/ic_back"
+                app:tint="@color/qw_text_primary" />
+
+            <TextView
+                style="@style/QW.Text.SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="8dp"
+                android:fontFamily="serif"
+                android:text="Event Details" />
+
+            <ImageView
+                android:id="@+id/btn_share"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Share earthquake"
+                android:padding="8dp"
+                android:src="@drawable/ic_share"
+                app:tint="@color/qw_text_primary" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/spacing_xxxl">
+
+            <!-- 1. Hero Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/QW.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <!-- Large 44sp magnitude badge -->
+                        <TextView
+                            android:id="@+id/tv_hero_magnitude"
+                            style="@style/QW.Text.MagnitudeBig"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_magnitude_badge"
+                            android:backgroundTint="@color/qw_sev_moderate"
+                            android:gravity="center"
+                            android:text="5.4" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tv_hero_severity_label"
+                                style="@style/QW.Text.Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="MODERATE SHAKING"
+                                android:textColor="@color/qw_sev_moderate"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_hero_place"
+                                style="@style/QW.Text.SectionTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Near Tonga" />
+
+                            <TextView
+                                android:id="@+id/tv_hero_country"
+                                style="@style/QW.Text.Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="1dp"
+                                android:textColor="@color/qw_primary"
+                                android:textStyle="bold"
+                                android:text="English Region: Tonga" />
+
+                            <TextView
+                                android:id="@+id/tv_hero_datetime"
+                                style="@style/QW.Text.Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Nov 13, 2026 \u2022 12:12 PM" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 2. Three-Column Stat Row -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:columnCount="3"
+                android:alignmentMode="alignMargins"
+                android:columnOrderPreserved="false">
+
+                <!-- Stat 1: Time Ago -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/QW.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_marginEnd="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Recorded" />
+
+                        <TextView
+                            android:id="@+id/tv_stat_timeago"
+                            style="@style/QW.Text.StatNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textSize="16sp"
+                            android:text="2h ago" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Stat 2: Magnitude & Type -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/QW.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Magnitude" />
+
+                        <TextView
+                            android:id="@+id/tv_stat_mag_type"
+                            style="@style/QW.Text.StatNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textSize="16sp"
+                            android:text="5.4 mb" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Stat 3: Focal Depth -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/QW.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_marginStart="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Depth" />
+
+                        <TextView
+                            android:id="@+id/tv_stat_depth"
+                            style="@style/QW.Text.StatNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textSize="16sp"
+                            android:text="10 km" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </GridLayout>
+
+            <!-- 3. Magnitude Scale Bar -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/QW.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        style="@style/QW.Text.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="serif"
+                        android:textSize="16sp"
+                        android:text="Magnitude Scale" />
+
+                    <!-- 4-segment colored bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="12dp"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:orientation="horizontal">
+
+                        <!-- Low: <4.0 -->
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:background="@color/qw_sev_low" />
+
+                        <!-- Moderate: 4.0 - 4.9 -->
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:layout_marginStart="2dp"
+                            android:background="@color/qw_sev_moderate" />
+
+                        <!-- Strong: 5.0 - 5.9 -->
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:layout_marginStart="2dp"
+                            android:background="@color/qw_sev_strong" />
+
+                        <!-- Major: 6.0+ -->
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:layout_marginStart="2dp"
+                            android:background="@color/qw_sev_major" />
+                    </LinearLayout>
+
+                    <!-- Scale Needle Marker / Pointer container -->
+                    <RelativeLayout
+                        android:id="@+id/scale_pointer_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp">
+
+                        <ImageView
+                            android:id="@+id/iv_scale_needle"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_alignParentTop="true"
+                            android:src="@drawable/ic_back"
+                            android:rotation="90"
+                            app:tint="@color/qw_text_primary"
+                            android:contentDescription="@null" />
+                    </RelativeLayout>
+
+                    <!-- Labels -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="Low &lt;4" />
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Mod 4\u20135" />
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Str 5\u20136" />
+
+                        <TextView
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:gravity="end"
+                            android:text="Major \u22656" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4. Mini Epicenter Map -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/QW.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Mini osmdroid map -->
+                    <org.osmdroid.views.MapView
+                        android:id="@+id/mini_map_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="190dp" />
+
+                    <!-- Coordinates and user distance footer -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tv_detail_distance"
+                            style="@style/QW.Text.Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:text="Distance from you: Unknown" />
+
+                        <TextView
+                            android:id="@+id/tv_detail_coordinates"
+                            style="@style/QW.Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Coordinates: 0.0000\u00B0 N, 0.0000\u00B0 E" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5. Community "I Felt This" Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/QW.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        style="@style/QW.Text.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="serif"
+                        android:textSize="16sp"
+                        android:text="Community Reports" />
+
+                    <TextView
+                        android:id="@+id/tv_felt_count"
+                        style="@style/QW.Text.BodySecondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Did you feel this earthquake? Submit your report." />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_felt_toggle"
+                        style="@style/QW.Button.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:text="I felt this"
+                        app:icon="@drawable/ic_location" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 6. AI Explanation Card -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/QW.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/QW.Text.SectionTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="serif"
+                            android:textSize="16sp"
+                            android:text="AI Explanation" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_explain_quake"
+                            style="@style/QW.Button.Secondary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="38dp"
+                            android:textSize="13sp"
+                            android:text="Explain"
+                            app:icon="@drawable/ic_chat" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_ai_explanation_content"
+                        style="@style/QW.Text.BodySecondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:lineSpacingMultiplier="1.2"
+                        android:text="Tap Explain to generate plain-language seismic context, felt intensity estimations, and safety actions via Gemini." />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 7. Safety Tips Field Guide (Enhanced Editorial UI) -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/QW.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <!-- Section Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_shield"
+                            app:tint="@color/qw_primary" />
+
+                        <TextView
+                            style="@style/QW.Text.SectionTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:fontFamily="serif"
+                            android:text="Safety Field Guide"
+                            android:textSize="17sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/QW.Text.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Actionable survival protocols verified by seismic authorities" />
+
+                    <!-- Phase 1: Before Shaking -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        app:cardBackgroundColor="@color/qw_surface_variant"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/qw_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                style="@style/QW.Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="BEFORE SHAKING \u2022 PREPARE"
+                                android:textColor="@color/qw_primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                style="@style/QW.Text.BodySecondary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:lineSpacingMultiplier="1.2"
+                                android:text="\u2022 Secure tall furniture, appliances and hanging items to wall studs.\n\u2022 Keep an emergency grab-bag ready (water, rations, torch, first aid).\n\u2022 Identify structural safe spots: under sturdy desks or interior walls."
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Phase 2: During Shaking -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:cardBackgroundColor="@color/qw_primary_container"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/qw_primary"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                style="@style/QW.Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="DURING SHAKING \u2022 DROP, COVER, HOLD ON"
+                                android:textColor="@color/qw_primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                style="@style/QW.Text.Body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:lineSpacingMultiplier="1.2"
+                                android:text="\u2022 DROP down onto hands and knees to prevent being knocked down.\n\u2022 COVER your head and neck under a sturdy table or desk.\n\u2022 HOLD ON until shaking stops. Do not run outdoors during tremors."
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Phase 3: After Shaking -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:cardBackgroundColor="@color/qw_surface_variant"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/qw_border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                style="@style/QW.Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="AFTER SHAKING \u2022 INSPECT &amp; RECOVER"
+                                android:textColor="@color/qw_primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                style="@style/QW.Text.BodySecondary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:lineSpacingMultiplier="1.2"
+                                android:text="\u2022 Expect aftershocks; stay clear of damaged structures.\n\u2022 Check yourself and nearby individuals for injuries; apply first aid.\n\u2022 Inspect utility lines: shut off gas, water, or severed power mains."
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 8. View on USGS Action Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_on_usgs"
+                style="@style/QW.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="View on USGS website" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

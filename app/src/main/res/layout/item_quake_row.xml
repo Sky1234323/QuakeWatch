@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/QW.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_sm"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/card_padding">
+
+        <!-- Severity Badge with Magnitude (Serif bold) -->
+        <TextView
+            android:id="@+id/tv_badge_mag"
+            android:layout_width="@dimen/mag_badge_size"
+            android:layout_height="@dimen/mag_badge_size"
+            android:background="@drawable/bg_magnitude_badge"
+            android:gravity="center"
+            android:text="4.5"
+            android:textColor="@color/qw_on_primary"
+            android:textSize="@dimen/mag_badge_text"
+            android:fontFamily="serif"
+            android:textStyle="bold" />
+
+        <!-- Event Details Column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Place Title -->
+            <TextView
+                android:id="@+id/tv_place"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="12 km ESE of Baculin, Philippines"
+                style="@style/QW.Text.Body"
+                android:textStyle="bold" />
+
+            <!-- Time, Depth, and Distance Subtitle -->
+            <TextView
+                android:id="@+id/tv_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="3 h ago \u2022 79.2 km deep"
+                style="@style/QW.Text.Caption" />
+        </LinearLayout>
+
+        <!-- Felt Chip (Visible when feltCount > 0) -->
+        <TextView
+            android:id="@+id/tv_felt_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_xs"
+            android:background="@drawable/bg_chip"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="3dp"
+            android:text="3 felt"
+            android:textColor="@color/qw_text_secondary"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif-medium"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

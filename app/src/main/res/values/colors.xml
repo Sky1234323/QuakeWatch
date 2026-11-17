@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- QuakeWatch warm light palette -->
+    <color name="qw_background">#FBF6EE</color>
+    <color name="qw_surface">#FFFDF9</color>
+    <color name="qw_surface_variant">#F3EADB</color>
+    <color name="qw_border">#E8DCC8</color>
+
+    <color name="qw_text_primary">#2B2118</color>
+    <color name="qw_text_secondary">#6B5B4B</color>
+    <color name="qw_text_tertiary">#9A8A78</color>
+
+    <color name="qw_primary">#C9541F</color>
+    <color name="qw_primary_container">#F9E3D6</color>
+    <color name="qw_on_primary">#FFFFFF</color>
+
+    <!-- Severity colors -->
+    <color name="qw_band_micro">#C4B59F</color>
+    <color name="qw_sev_low">#5E8C4A</color>
+    <color name="qw_sev_moderate">#E5B02F</color>
+    <color name="qw_sev_strong">#E8832A</color>
+    <color name="qw_sev_major">#B8322A</color>
+
+    <color name="qw_error">#B3261E</color>
+
+    <!-- Ripple color -->
+    <color name="qw_ripple">#20C9541F</color>
+</resources>

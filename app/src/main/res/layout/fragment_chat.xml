@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/qw_background"
+    android:orientation="vertical">
+
+    <!-- 1. Toolbar Header with Title & New Chat Action -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="@dimen/spacing_lg"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="@dimen/spacing_xs">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/QW.Text.ScreenTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_chat" />
+
+            <TextView
+                style="@style/QW.Text.BodySecondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="AI earthquake preparedness &amp; safety guide" />
+        </LinearLayout>
+
+        <!-- History Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_chat_history"
+            style="@style/QW.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Recents"
+            app:icon="@drawable/ic_history"
+            app:iconSize="16dp" />
+
+        <!-- New Chat Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_new_chat"
+            style="@style/QW.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:text="New"
+            app:icon="@drawable/ic_refresh"
+            app:iconSize="16dp" />
+    </LinearLayout>
+
+    <!-- 2. Fixed Emergency Advisory Note at Top -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginEnd="@dimen/screen_padding"
+        android:background="@drawable/bg_chip"
+        android:backgroundTint="@color/qw_surface_variant"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_notifications"
+            app:tint="@color/qw_primary" />
+
+        <TextView
+            style="@style/QW.Text.Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="General information, not an official warning. In an emergency call 112."
+            android:textColor="@color/qw_text_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- 3. Chat Messages RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_chat_messages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <!-- 4. Suggestion Chips Row (Visible when conversation is empty) -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_suggestions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginEnd="@dimen/screen_padding"
+        android:layout_marginBottom="8dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_suggestion_during"
+                style="@style/QW.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="What should I do during an earthquake?" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_suggestion_aftershocks"
+                style="@style/QW.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Why do aftershocks happen?" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_suggestion_magnitude"
+                style="@style/QW.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Magnitude vs intensity" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_suggestion_kit"
+                style="@style/QW.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Build an emergency kit" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- 5. Bottom Input Area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/qw_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="8dp"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="12dp">
+
+        <EditText
+            android:id="@+id/et_chat_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_chip"
+            android:backgroundTint="@color/qw_surface_variant"
+            android:hint="Ask about earthquakes, safety..."
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="3"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:textColor="@color/qw_text_primary"
+            android:textColorHint="@color/qw_text_tertiary"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/btn_send_chat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_magnitude_badge"
+            android:backgroundTint="@color/qw_primary"
+            android:contentDescription="Send message"
+            android:padding="12dp"
+            android:src="@drawable/ic_send"
+            app:tint="@color/qw_on_primary" />
+    </LinearLayout>
+
+</LinearLayout>

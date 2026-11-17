@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QuakeWatch</string>
+    <string name="tagline">Know what the ground is doing</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_home">Home</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_chat">Ask AI</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Severity labels -->
+    <string name="severity_low">Low</string>
+    <string name="severity_moderate">Moderate</string>
+    <string name="severity_strong">Strong</string>
+    <string name="severity_major">Major</string>
+
+    <!-- Placeholder -->
+    <string name="design_showcase_title">Design System</string>
+    <string name="sample_place">12 km ESE of Baculin, Philippines</string>
+    <string name="sample_time">3 h ago | 79 km deep</string>
+
+    <!-- Google Sign-In Client ID -->
+    <string name="default_web_client_id" translatable="false">mock_web_client_id</string>
+</resources>

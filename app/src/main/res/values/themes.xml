@@ -1,0 +1,42 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.QuakeWatch" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/qw_primary</item>
+        <item name="colorOnPrimary">@color/qw_on_primary</item>
+        <item name="colorPrimaryContainer">@color/qw_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/qw_text_primary</item>
+
+        <!-- Surface -->
+        <item name="colorSurface">@color/qw_surface</item>
+        <item name="colorOnSurface">@color/qw_text_primary</item>
+        <item name="colorSurfaceVariant">@color/qw_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/qw_text_secondary</item>
+
+        <!-- Background -->
+        <item name="android:colorBackground">@color/qw_background</item>
+        <item name="colorOnBackground">@color/qw_text_primary</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/qw_error</item>
+
+        <!-- Outline (borders) -->
+        <item name="colorOutline">@color/qw_border</item>
+        <item name="colorOutlineVariant">@color/qw_border</item>
+
+        <!-- Status bar and nav bar -->
+        <item name="android:statusBarColor">@color/qw_background</item>
+        <item name="android:navigationBarColor">@color/qw_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <!-- Disable dark mode -->
+        <item name="android:forceDarkAllowed">false</item>
+
+        <!-- Ripple -->
+        <item name="android:colorControlHighlight">@color/qw_ripple</item>
+    </style>
+
+    <style name="Theme.QuakeWatch" parent="Base.Theme.QuakeWatch" />
+
+</resources>

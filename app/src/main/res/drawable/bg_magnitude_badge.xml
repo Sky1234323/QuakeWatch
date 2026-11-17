@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="@dimen/mag_badge_radius" />
+    <solid android:color="@color/qw_primary" />
+    <size
+        android:width="@dimen/mag_badge_size"
+        android:height="@dimen/mag_badge_size" />
+</shape>

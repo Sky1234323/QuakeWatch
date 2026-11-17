@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C9541F"
+        android:strokeWidth="2.5"
+        android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0"/>
+    <!-- Middle ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C9541F"
+        android:strokeWidth="2"
+        android:pathData="M54,54m-22,0a22,22 0,1 1,44 0a22,22 0,1 1,-44 0"/>
+    <!-- Inner ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C9541F"
+        android:strokeWidth="1.5"
+        android:pathData="M54,54m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0"/>
+    <!-- Seismograph zigzag line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C9541F"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M24,54 L38,54 L42,42 L46,62 L50,38 L54,66 L58,40 L62,60 L66,46 L70,54 L84,54"/>
+</vector>

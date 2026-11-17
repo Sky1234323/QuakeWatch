@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingEnd="@dimen/screen_padding"
+    android:paddingBottom="48dp">
+
+    <!-- Circle Container for Slide Graphic -->
+    <FrameLayout
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:background="@drawable/bg_magnitude_badge"
+        android:backgroundTint="@color/qw_primary_container">
+
+        <ImageView
+            android:id="@+id/slide_icon"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_map"
+            android:tint="@color/qw_primary"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <!-- Slide Title (Serif 28sp) -->
+    <TextView
+        android:id="@+id/slide_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:text="See what is shaking"
+        style="@style/QW.Text.ScreenTitle" />
+
+    <!-- Slide Description (Sans-serif 15sp) -->
+    <TextView
+        android:id="@+id/slide_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:text="Track live earthquakes worldwide and in your region on a clear, interactive map."
+        style="@style/QW.Text.BodySecondary" />
+
+</LinearLayout>

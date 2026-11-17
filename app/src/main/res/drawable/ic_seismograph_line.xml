@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="80dp"
+    android:viewportWidth="200"
+    android:viewportHeight="80">
+    <!-- Base circle -->
+    <path
+        android:fillColor="@color/qw_primary_container"
+        android:pathData="M100,40m-35,0a35,35 0,1 1,70 0a35,35 0,1 1,-70 0"/>
+    <!-- Inner circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/qw_primary"
+        android:strokeWidth="1.5"
+        android:pathData="M100,40m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0"/>
+    <!-- Zigzag line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/qw_primary"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M10,40 L50,40 L60,20 L70,55 L80,15 L90,60 L100,18 L110,58 L120,25 L130,40 L190,40"/>
+</vector>
