@@ -20,6 +20,15 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.akash.quakewatch"
         minSdk = 24
@@ -29,7 +38,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val geminiApiKey = localProps.getProperty("GEMINI_API_KEY", "").trim().removeSurrounding("\"").removeSurrounding("'")
+        val envGeminiKey = System.getenv("GEMINI_API_KEY")
+        val propGeminiKey = localProps.getProperty("GEMINI_API_KEY", "")
+        val rawGeminiKey = if (!envGeminiKey.isNullOrEmpty()) envGeminiKey else propGeminiKey
+        val geminiApiKey = rawGeminiKey.trim().removeSurrounding("\"").removeSurrounding("'")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 

@@ -25,9 +25,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Create stub local.properties for CI build
+      - name: Create local.properties for CI build
+        env:
+          SECRET_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "GEMINI_API_KEY=ci_test_stub_key" > local.properties
+          KEY="${SECRET_GEMINI_KEY:-AQ.Ab8RN6JLwg7QRExBQyqoET5O2b0DzFcioqfiYjh-MFS7VZGSuA}"
+          echo "GEMINI_API_KEY=$KEY" > local.properties
 
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest --no-daemon
