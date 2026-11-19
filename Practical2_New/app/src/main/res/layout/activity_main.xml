@@ -92,7 +92,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
-                            android:text="JSONPlaceholder (/posts - JSON Array)"
+                            android:text="English Articles &amp; Stories (dummyjson.com/posts)"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp" />
 
@@ -100,7 +100,7 @@
                             android:id="@+id/rb_usgs"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="USGS Seismology (GeoJSON Features Object)"
+                            android:text="USGS Seismology (earthquake.usgs.gov - GeoJSON)"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp" />
                     </RadioGroup>

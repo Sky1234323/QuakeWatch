@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private ChatAdapter mChatAdapter;
 
     private String mLatestRawJson = "";
-    private String mCurrentEndpoint = RestApiClient.ENDPOINT_JSONPLACEHOLDER;
+    private String mCurrentEndpoint = RestApiClient.ENDPOINT_ENGLISH_POSTS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
             if (checkedId == R.id.rb_usgs) {
                 mCurrentEndpoint = RestApiClient.ENDPOINT_USGS;
             } else {
-                mCurrentEndpoint = RestApiClient.ENDPOINT_JSONPLACEHOLDER;
+                mCurrentEndpoint = RestApiClient.ENDPOINT_ENGLISH_POSTS;
             }
         });
 

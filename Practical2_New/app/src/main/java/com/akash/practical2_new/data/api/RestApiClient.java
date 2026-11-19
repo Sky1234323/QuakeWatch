@@ -17,11 +17,11 @@ import java.util.List;
 
 /**
  * RestApiClient performs standard HTTP GET requests using Java HttpURLConnection
- * to fetch JSON data from a REST API endpoint and parses the response.
+ * to fetch live JSON data from REST API endpoints and parses the response into English records.
  */
 public class RestApiClient {
 
-    public static final String ENDPOINT_JSONPLACEHOLDER = "https://jsonplaceholder.typicode.com/posts";
+    public static final String ENDPOINT_ENGLISH_POSTS = "https://dummyjson.com/posts?limit=25";
     public static final String ENDPOINT_USGS = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson";
 
     public interface ApiCallback {
@@ -47,7 +47,7 @@ public class RestApiClient {
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
-                conn.setRequestProperty("User-Agent", "QuakeWatch-Practical2/1.0");
+                conn.setRequestProperty("User-Agent", "Practical2-RestClient/1.0");
                 conn.setConnectTimeout(10000);
                 conn.setReadTimeout(10000);
 
@@ -91,21 +91,24 @@ public class RestApiClient {
         List<ApiItem> list = new ArrayList<>();
         String trimmed = rawJson.trim();
 
-        if (trimmed.startsWith("[")) {
-            // JSON Array (e.g. JSONPlaceholder /posts)
-            JSONArray array = new JSONArray(trimmed);
-            int count = Math.min(array.length(), 25);
-            for (int i = 0; i < count; i++) {
-                JSONObject obj = array.getJSONObject(i);
-                String id = String.valueOf(obj.optInt("id", i + 1));
-                String title = obj.optString("title", "Untitled");
-                String body = obj.optString("body", "");
-                list.add(new ApiItem(id, title, body, "Post #" + id));
-            }
-        } else if (trimmed.startsWith("{")) {
-            // JSON Object (e.g. GeoJSON features)
+        if (trimmed.startsWith("{")) {
             JSONObject root = new JSONObject(trimmed);
-            if (root.has("features")) {
+
+            // Case 1: English Articles/Posts API (dummyjson.com/posts)
+            if (root.has("posts")) {
+                JSONArray posts = root.getJSONArray("posts");
+                int count = Math.min(posts.length(), 25);
+                for (int i = 0; i < count; i++) {
+                    JSONObject post = posts.getJSONObject(i);
+                    String id = String.valueOf(post.optInt("id", i + 1));
+                    String title = post.optString("title", "English Post");
+                    String body = post.optString("body", "");
+                    int views = post.optInt("views", 0);
+                    list.add(new ApiItem(id, title, body, "Article #" + id + " • " + views + " views"));
+                }
+            }
+            // Case 2: USGS GeoJSON Features
+            else if (root.has("features")) {
                 JSONArray features = root.getJSONArray("features");
                 int count = Math.min(features.length(), 25);
                 for (int i = 0; i < count; i++) {
@@ -121,6 +124,17 @@ public class RestApiClient {
                         list.add(new ApiItem(id, title, body, "Magnitude " + mag));
                     }
                 }
+            }
+        } else if (trimmed.startsWith("[")) {
+            // Case 3: JSON Array format
+            JSONArray array = new JSONArray(trimmed);
+            int count = Math.min(array.length(), 25);
+            for (int i = 0; i < count; i++) {
+                JSONObject obj = array.getJSONObject(i);
+                String id = String.valueOf(obj.optInt("id", i + 1));
+                String title = obj.optString("title", "Post");
+                String body = obj.optString("body", "");
+                list.add(new ApiItem(id, title, body, "Post #" + id));
             }
         }
         return list;

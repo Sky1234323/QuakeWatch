@@ -16,17 +16,22 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * GeminiAiClient integrates Google Gemini AI API via pure HttpURLConnection.
- * It sends structured QA prompts with strict English language instructions
- * and returns rapid, informative answers for college practical evaluations.
+ * It features automatic multi-model fallback (gemini-3.5-flash-lite, gemini-3.8-flash, etc.)
+ * with strict English language instructions and rapid response delivery.
  */
 public class GeminiAiClient {
 
-    private static final String GEMINI_API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    private static final String[] CANDIDATE_MODELS = {
+            "gemini-3.5-flash-lite",
+            "gemini-3.8-flash",
+            "gemini-3.6-flash"
+    };
 
-    private static final String SYSTEM_INSTRUCTION =
-            "You are an intelligent, helpful academic AI assistant for Android & Computer Science students. "
-                    + "Always reply strictly in the English language. Keep explanations concise, accurate, and easy to understand.";
+    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
+
+    private static final String SYSTEM_PREFIX =
+            "Instructions: You are an academic AI assistant for Android & Computer Science students. "
+                    + "Answer strictly in the English language in 2 to 4 concise sentences. Never use Spanish or other languages.\n\nQuestion: ";
 
     public interface AiCallback {
         void onResponse(String answer, long latencyMs);
@@ -40,7 +45,8 @@ public class GeminiAiClient {
     }
 
     /**
-     * Sends a question to Gemini and delivers the response on the UI thread.
+     * Sends a question to Gemini and delivers the response on the UI thread,
+     * automatically falling back across supported models if needed.
      */
     public void askQuestion(final String userQuestion, final AiCallback callback) {
         mExecutors.runOnBackground(() -> {
@@ -52,82 +58,93 @@ public class GeminiAiClient {
                 return;
             }
 
-            HttpURLConnection conn = null;
-            try {
-                URL url = new URL(GEMINI_API_URL + apiKey);
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("User-Agent", "Practical2-GeminiAssistant/1.0");
-                conn.setConnectTimeout(15000);
-                conn.setReadTimeout(20000);
-                conn.setDoOutput(true);
+            Exception lastException = null;
+            String lastErrorResponse = "";
 
-                // Build Request JSON
-                JSONObject payload = new JSONObject();
+            for (String model : CANDIDATE_MODELS) {
+                HttpURLConnection conn = null;
+                try {
+                    String endpoint = BASE_URL + model + ":generateContent?key=" + apiKey;
+                    URL url = new URL(endpoint);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("User-Agent", "Practical2-GeminiAssistant/1.0");
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(25000);
+                    conn.setDoOutput(true);
 
-                // System Instruction (Strict English)
-                JSONObject sysInstruction = new JSONObject();
-                JSONArray sysParts = new JSONArray();
-                sysParts.put(new JSONObject().put("text", SYSTEM_INSTRUCTION));
-                sysInstruction.put("parts", sysParts);
-                payload.put("systemInstruction", sysInstruction);
+                    // Build Request JSON
+                    JSONObject payload = new JSONObject();
 
-                // User Content
-                JSONArray contents = new JSONArray();
-                JSONObject userMsg = new JSONObject();
-                userMsg.put("role", "user");
-                JSONArray userParts = new JSONArray();
-                userParts.put(new JSONObject().put("text", userQuestion));
-                userMsg.put("parts", userParts);
-                contents.put(userMsg);
-                payload.put("contents", contents);
+                    JSONArray contents = new JSONArray();
+                    JSONObject userMsg = new JSONObject();
+                    userMsg.put("role", "user");
 
-                // Generation Config
-                JSONObject genConfig = new JSONObject();
-                genConfig.put("temperature", 0.7);
-                genConfig.put("maxOutputTokens", 1024);
-                payload.put("generationConfig", genConfig);
+                    JSONArray userParts = new JSONArray();
+                    userParts.put(new JSONObject().put("text", SYSTEM_PREFIX + userQuestion));
+                    userMsg.put("parts", userParts);
+                    contents.put(userMsg);
+                    payload.put("contents", contents);
 
-                byte[] postBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(postBytes);
-                    os.flush();
-                }
+                    // Generation Config
+                    JSONObject genConfig = new JSONObject();
+                    genConfig.put("temperature", 0.5);
+                    genConfig.put("maxOutputTokens", 400);
 
-                int statusCode = conn.getResponseCode();
-                InputStream is = (statusCode >= 200 && statusCode < 300)
-                        ? conn.getInputStream()
-                        : conn.getErrorStream();
+                    JSONObject thinking = new JSONObject();
+                    thinking.put("thinkingLevel", "minimal");
+                    genConfig.put("thinkingConfig", thinking);
 
-                StringBuilder sb = new StringBuilder();
-                if (is != null) {
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            sb.append(line).append('\n');
+                    payload.put("generationConfig", genConfig);
+
+                    byte[] postBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+                    try (OutputStream os = conn.getOutputStream()) {
+                        os.write(postBytes);
+                        os.flush();
+                    }
+
+                    int statusCode = conn.getResponseCode();
+                    InputStream is = (statusCode >= 200 && statusCode < 300)
+                            ? conn.getInputStream()
+                            : conn.getErrorStream();
+
+                    StringBuilder sb = new StringBuilder();
+                    if (is != null) {
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                sb.append(line).append('\n');
+                            }
                         }
                     }
-                }
 
-                String responseStr = sb.toString();
-                long latencyMs = System.currentTimeMillis() - startTime;
-
-                if (statusCode >= 200 && statusCode < 300) {
-                    String extractedText = parseGeminiText(responseStr);
-                    mExecutors.runOnMain(() -> callback.onResponse(extractedText, latencyMs));
-                } else {
-                    final String err = "Gemini API error (HTTP " + statusCode + "): " + responseStr;
-                    mExecutors.runOnMain(() -> callback.onError(err));
-                }
-            } catch (Exception e) {
-                final String err = e.getMessage() != null ? e.getMessage() : e.toString();
-                mExecutors.runOnMain(() -> callback.onError("Network error: " + err));
-            } finally {
-                if (conn != null) {
-                    conn.disconnect();
+                    String responseStr = sb.toString();
+                    if (statusCode >= 200 && statusCode < 300) {
+                        String extractedText = parseGeminiText(responseStr);
+                        long latencyMs = System.currentTimeMillis() - startTime;
+                        mExecutors.runOnMain(() -> callback.onResponse(extractedText, latencyMs));
+                        return; // Successfully answered!
+                    } else {
+                        lastErrorResponse = "Model " + model + " (HTTP " + statusCode + "): " + responseStr;
+                    }
+                } catch (Exception e) {
+                    lastException = e;
+                } finally {
+                    if (conn != null) {
+                        conn.disconnect();
+                    }
                 }
             }
+
+            // If all candidate models failed
+            final String finalMsg;
+            if (lastException != null) {
+                finalMsg = "Network error: " + (lastException.getMessage() != null ? lastException.getMessage() : lastException.toString());
+            } else {
+                finalMsg = !lastErrorResponse.isEmpty() ? lastErrorResponse : "Gemini API failed to generate a response.";
+            }
+            mExecutors.runOnMain(() -> callback.onError(finalMsg));
         });
     }
 

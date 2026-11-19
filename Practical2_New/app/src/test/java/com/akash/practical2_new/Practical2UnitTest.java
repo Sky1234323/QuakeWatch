@@ -50,4 +50,16 @@ public class Practical2UnitTest {
         assertEquals("Test Title", obj.getString("title"));
         assertEquals("Test Body", obj.getString("body"));
     }
+
+    @Test
+    public void testEnglishPostsObjectParsing() throws Exception {
+        String jsonObjectString = "{\"posts\": [{\"id\": 10, \"title\": \"English Post\", \"body\": \"Article content\", \"views\": 300}]}";
+        JSONObject root = new JSONObject(jsonObjectString);
+        assertTrue(root.has("posts"));
+        JSONArray posts = root.getJSONArray("posts");
+        assertEquals(1, posts.length());
+        JSONObject post = posts.getJSONObject(0);
+        assertEquals(10, post.getInt("id"));
+        assertEquals("English Post", post.getString("title"));
+    }
 }
