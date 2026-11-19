@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Practical 2: API Integration</string>
+    <string name="tab_rest_api">REST API Explorer</string>
+    <string name="tab_ai_qa">AI QA Assistant</string>
+
+    <string name="rest_title">Live REST API Integration</string>
+    <string name="rest_subtitle">Fetch JSON data from REST API endpoints via HttpURLConnection</string>
+    <string name="btn_fetch_data">Fetch REST Data</string>
+    <string name="btn_view_raw_json">View Raw JSON Response</string>
+
+    <string name="ai_title">Gemini AI QA Assistant</string>
+    <string name="ai_subtitle">Ask questions to Gemini AI in English for instant answers</string>
+    <string name="hint_ask_ai">Ask a question (e.g. What is a REST API?)...</string>
+    <string name="btn_send">Send</string>
+</resources>

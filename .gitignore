@@ -12,6 +12,12 @@ local.properties
 .DS_Store
 /build
 app/build/
+Practical2_New/build/
+Practical2_New/app/build/
+Practical2_New/.gradle/
+Practical8_New/build/
+Practical8_New/app/build/
+Practical8_New/.gradle/
 /captures
 .externalNativeBuild
 .cxx
