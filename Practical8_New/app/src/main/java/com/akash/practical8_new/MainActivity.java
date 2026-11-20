@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -284,25 +286,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (checkedId == R.id.chip_streets) {
                 showOsmMap();
                 binding.osmMapView.setTileSource(TileSourceFactory.MAPNIK);
+                binding.osmMapView.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                binding.bannerGoogleMapsNotice.setVisibility(View.GONE);
                 binding.osmMapView.invalidate();
                 Toast.makeText(this, "Streets Map loaded", Toast.LENGTH_SHORT).show();
             } else if (checkedId == R.id.chip_satellite) {
                 showOsmMap();
                 binding.osmMapView.setTileSource(ESRI_SATELLITE);
+                binding.osmMapView.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                binding.bannerGoogleMapsNotice.setVisibility(View.GONE);
                 binding.osmMapView.invalidate();
                 Toast.makeText(this, "Satellite Imagery loaded", Toast.LENGTH_SHORT).show();
             } else if (checkedId == R.id.chip_topo) {
                 showOsmMap();
                 binding.osmMapView.setTileSource(TileSourceFactory.getTileSource("OpenTopoMap"));
+                binding.osmMapView.getOverlayManager().getTilesOverlay().setColorFilter(null);
+                binding.bannerGoogleMapsNotice.setVisibility(View.GONE);
                 binding.osmMapView.invalidate();
                 Toast.makeText(this, "Topographic Terrain loaded", Toast.LENGTH_SHORT).show();
             } else if (checkedId == R.id.chip_dark) {
                 showOsmMap();
-                binding.osmMapView.setTileSource(CARTO_DARK);
+                binding.osmMapView.setTileSource(TileSourceFactory.MAPNIK);
+                // Inverted high-contrast Dark Mode: deep charcoal background & clean roads without any API key watermark!
+                ColorMatrix matrix = new ColorMatrix(new float[]{
+                        -0.80f, 0, 0, 0, 230,
+                        0, -0.80f, 0, 0, 230,
+                        0, 0, -0.80f, 0, 240,
+                        0, 0, 0, 1, 0
+                });
+                binding.osmMapView.getOverlayManager().getTilesOverlay().setColorFilter(new ColorMatrixColorFilter(matrix));
+                binding.bannerGoogleMapsNotice.setVisibility(View.GONE);
                 binding.osmMapView.invalidate();
-                Toast.makeText(this, "Dark Night Map loaded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Dark Night Mode loaded", Toast.LENGTH_SHORT).show();
             } else if (checkedId == R.id.chip_google) {
                 showGoogleMap();
+                binding.bannerGoogleMapsNotice.setVisibility(View.VISIBLE);
                 Toast.makeText(this, "Google Maps SDK active", Toast.LENGTH_SHORT).show();
             }
         });

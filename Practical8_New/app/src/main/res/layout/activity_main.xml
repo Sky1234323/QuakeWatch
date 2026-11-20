@@ -218,6 +218,46 @@
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
 
+            <!-- Google Maps SDK Banner (Appears only when Google Maps SDK chip is selected) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/banner_google_maps_notice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="85dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="4dp"
+                app:strokeColor="@color/card_border"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/white"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🌐 Google Maps Android SDK Active"
+                        android:textColor="@color/primary_dark"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Google Maps API key is configured. To see live photo tiles without cloud quota limits, tap 'Streets' or 'Satellite' above."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Recenter FAB -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab_my_location"
