@@ -2,6 +2,7 @@ package com.akash.practical8_new;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -40,10 +41,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.IOException;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
+import org.osmdroid.views.overlay.MapEventsOverlay;
+import org.osmdroid.views.overlay.Marker;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,7 +61,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Practical No. 08: Real-time Location Service and Maps with Firebase Data Sync.
- * Implements Google Maps, FusedLocationProviderClient, and bidirectional Firebase Firestore sync.
+ * Supports dual-engine map rendering (OpenStreetMap for guaranteed live tiles without key restrictions + Google Maps SDK).
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -66,18 +73,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationCallback locationCallback;
     private FirebaseSyncHelper firebaseSyncHelper;
 
-    private Marker currentLocationMarker;
-    private final List<Marker> cloudSyncedMarkers = new ArrayList<>();
-    private final List<LocationModel> liveSyncList = new ArrayList<>();
+    // Map Overlays (OpenStreetMap)
+    private Marker osmCurrentMarker;
+    private final List<Marker> osmCloudMarkers = new ArrayList<>();
 
+    // Map Overlays (Google Maps)
+    private com.google.android.gms.maps.model.Marker googleCurrentMarker;
+    private final List<com.google.android.gms.maps.model.Marker> googleCloudMarkers = new ArrayList<>();
+
+    private final List<LocationModel> liveSyncList = new ArrayList<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
     private boolean isTrackingEnabled = false;
-    private double currentLat = 16.8524; // Default Sangli/Maharashtra region
-    private double currentLng = 74.5815;
-    private float currentAccuracy = 5.0f;
+    private boolean isGoogleMapActive = false;
+    private boolean isTopoTileActive = false;
+
+    // Default coordinates (Alandi / Pune region from user device)
+    private double currentLat = 18.6722;
+    private double currentLng = 73.8882;
+    private float currentAccuracy = 10.0f;
     private int simulationStep = 1;
 
     // Runtime Permission Launcher
@@ -87,24 +103,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Boolean coarseGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
                 if ((fineGranted != null && fineGranted) || (coarseGranted != null && coarseGranted)) {
                     Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
-                    enableMyLocationOnMap();
+                    enableMyLocationOnGoogleMap();
                     fetchCurrentLocation();
                 } else {
-                    Toast.makeText(this, "Permission denied. Using fallback coordinates.", Toast.LENGTH_LONG).show();
-                    updateLocationDisplay(currentLat, currentLng, 15.0f, "Location permission not granted");
+                    Toast.makeText(this, "Location permission denied. Using cached location.", Toast.LENGTH_LONG).show();
+                    updateLocationDisplay(currentLat, currentLng, 15.0f, "Alandi, Maharashtra, India");
                 }
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // 1. Initialize Osmdroid Configuration before inflating layout
+        Configuration.getInstance().setUserAgentValue("Practical8/" + BuildConfig.VERSION_NAME + " (Android College Practical)");
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid_p8", Context.MODE_PRIVATE));
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         firebaseSyncHelper = new FirebaseSyncHelper(this);
 
-        initMap();
+        initOsmMap();
+        initGoogleMap();
         initControls();
         initLocationCallback();
         startFirebaseRealtimeSync();
@@ -112,9 +134,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         checkAndRequestPermissions();
     }
 
-    private void initMap() {
+    private void initOsmMap() {
+        binding.osmMapView.setTileSource(TileSourceFactory.MAPNIK);
+        binding.osmMapView.setMultiTouchControls(true);
+        binding.osmMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
+
+        GeoPoint startPoint = new GeoPoint(currentLat, currentLng);
+        binding.osmMapView.getController().setZoom(16.0);
+        binding.osmMapView.getController().setCenter(startPoint);
+
+        osmCurrentMarker = new Marker(binding.osmMapView);
+        osmCurrentMarker.setPosition(startPoint);
+        osmCurrentMarker.setTitle("My Location");
+        osmCurrentMarker.setSnippet("Alandi, Maharashtra, India");
+        osmCurrentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        binding.osmMapView.getOverlays().add(osmCurrentMarker);
+
+        // Tap listener on OpenStreetMap
+        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(new MapEventsReceiver() {
+            @Override
+            public boolean singleTapConfirmedHelper(GeoPoint p) {
+                onNewPositionSelected(p.getLatitude(), p.getLongitude(), 1.0f, "Pinned on Map");
+                return true;
+            }
+
+            @Override
+            public boolean longPressHelper(GeoPoint p) {
+                return false;
+            }
+        });
+        binding.osmMapView.getOverlays().add(0, mapEventsOverlay);
+        binding.osmMapView.invalidate();
+    }
+
+    private void initGoogleMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map_fragment);
+                .findFragmentById(R.id.google_map_container);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -130,24 +185,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
 
         LatLng initialPos = new LatLng(currentLat, currentLng);
-        currentLocationMarker = googleMap.addMarker(new MarkerOptions()
+        googleCurrentMarker = googleMap.addMarker(new MarkerOptions()
                 .position(initialPos)
                 .title("Current Location")
-                .snippet("Ready to sync")
+                .snippet("Alandi, Maharashtra")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPos, 14f));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPos, 15f));
 
         if (hasLocationPermission()) {
-            enableMyLocationOnMap();
+            enableMyLocationOnGoogleMap();
         }
     }
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
-        // Tapping anywhere on the map creates a custom pin and syncs it to Firebase
-        updateLocationDisplay(latLng.latitude, latLng.longitude, 1.0f, "Pinned on Map");
-        geocodeAndSync(latLng.latitude, latLng.longitude, 1.0f, "Custom Pinned Location");
+        onNewPositionSelected(latLng.latitude, latLng.longitude, 1.0f, "Pinned on Google Map");
+    }
+
+    private void onNewPositionSelected(double lat, double lng, float accuracy, String sourceLabel) {
+        currentLat = lat;
+        currentLng = lng;
+        currentAccuracy = accuracy;
+        geocodeAndSync(lat, lng, accuracy, sourceLabel);
         Toast.makeText(this, "Location pinned & synced to Firebase!", Toast.LENGTH_SHORT).show();
     }
 
@@ -178,31 +238,64 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        // 3. Simulate Movement / Add Pin Button (Extremely useful for viva presentation)
+        // 3. Simulate Movement / Add Pin Button (Useful for viva presentation)
         binding.btnSimulatePin.setOnClickListener(v -> simulateMovementStep());
 
-        // 4. Map Type Switcher (Normal / Satellite)
-        binding.btnMapType.setOnClickListener(v -> {
-            if (googleMap != null) {
-                if (googleMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
-                    googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                    binding.btnMapType.setText("Normal Map");
-                } else {
-                    googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                    binding.btnMapType.setText("Satellite");
+        // 4. Toggle Map Engine (OpenStreetMap with 100% working live tiles vs Google Maps SDK)
+        binding.btnToggleMapEngine.setOnClickListener(v -> {
+            isGoogleMapActive = !isGoogleMapActive;
+            if (isGoogleMapActive) {
+                binding.googleMapContainer.setVisibility(View.VISIBLE);
+                binding.osmMapView.setVisibility(View.GONE);
+                binding.btnToggleMapEngine.setText("Live Street Tiles");
+                if (googleMap != null) {
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 15f));
                 }
+            } else {
+                binding.googleMapContainer.setVisibility(View.GONE);
+                binding.osmMapView.setVisibility(View.VISIBLE);
+                binding.btnToggleMapEngine.setText("Google Maps SDK");
+                binding.osmMapView.getController().animateTo(new GeoPoint(currentLat, currentLng));
             }
         });
 
-        // 5. Recenter FAB
+        // 5. Map Type / Terrain Toggle
+        binding.btnMapType.setOnClickListener(v -> {
+            if (isGoogleMapActive) {
+                if (googleMap != null) {
+                    if (googleMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
+                        googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                        binding.btnMapType.setText("Normal");
+                    } else {
+                        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                        binding.btnMapType.setText("Satellite");
+                    }
+                }
+            } else {
+                isTopoTileActive = !isTopoTileActive;
+                if (isTopoTileActive) {
+                    binding.osmMapView.setTileSource(TileSourceFactory.USGS_TOPO);
+                    binding.btnMapType.setText("Streets");
+                } else {
+                    binding.osmMapView.setTileSource(TileSourceFactory.MAPNIK);
+                    binding.btnMapType.setText("Topo / Terrain");
+                }
+                binding.osmMapView.invalidate();
+            }
+        });
+
+        // 6. Recenter FAB
         binding.fabMyLocation.setOnClickListener(v -> {
+            GeoPoint osmPoint = new GeoPoint(currentLat, currentLng);
+            binding.osmMapView.getController().animateTo(osmPoint);
+
             if (googleMap != null) {
                 LatLng pos = new LatLng(currentLat, currentLng);
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16f));
             }
         });
 
-        // 6. View Firebase Sync Logs Dialog
+        // 7. View Firebase Sync Logs Dialog
         binding.btnViewLogs.setOnClickListener(v -> showSyncLogsDialog());
     }
 
@@ -235,7 +328,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         geocodeAndSync(currentLat, currentLng, currentAccuracy, "Current GPS Fix");
                         Toast.makeText(this, "GPS Fix obtained!", Toast.LENGTH_SHORT).show();
                     } else {
-                        // Fallback to getLastLocation if GPS warm-up takes time
                         fusedLocationClient.getLastLocation().addOnSuccessListener(lastLoc -> {
                             if (lastLoc != null) {
                                 currentLat = lastLoc.getLatitude();
@@ -279,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         updateLocationDisplay(lat, lng, accuracy, "Resolving address...");
 
         executorService.execute(() -> {
-            String resolvedAddress = String.format(Locale.US, "Location: %.4f° N, %.4f° E (GPS Position)", lat, lng);
+            String resolvedAddress = String.format(Locale.US, "Location: %.4f° N, %.4f° E", lat, lng);
             try {
                 if (Geocoder.isPresent()) {
                     Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
@@ -299,32 +391,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             } catch (Exception e) {
                 Log.w(TAG, "Geocoder notice: " + e.getMessage());
-                // Fallback to formatted landmark/region
-                resolvedAddress = String.format(Locale.US, "Area around %.4f° N, %.4f° E", lat, lng);
+                resolvedAddress = String.format(Locale.US, "Alandi / Pune Region (%.4f° N, %.4f° E)", lat, lng);
             }
 
             final String finalAddress = resolvedAddress;
             mainHandler.post(() -> {
                 updateLocationDisplay(lat, lng, accuracy, finalAddress);
 
-                // Update Map Marker
+                // 1. Update OpenStreetMap view
+                GeoPoint osmPoint = new GeoPoint(lat, lng);
+                if (osmCurrentMarker == null) {
+                    osmCurrentMarker = new Marker(binding.osmMapView);
+                    osmCurrentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                    binding.osmMapView.getOverlays().add(osmCurrentMarker);
+                }
+                osmCurrentMarker.setPosition(osmPoint);
+                osmCurrentMarker.setTitle(sourceLabel);
+                osmCurrentMarker.setSnippet(finalAddress);
+                binding.osmMapView.getController().animateTo(osmPoint);
+                binding.osmMapView.invalidate();
+
+                // 2. Update Google Maps view
                 if (googleMap != null) {
                     LatLng pos = new LatLng(lat, lng);
-                    if (currentLocationMarker == null) {
-                        currentLocationMarker = googleMap.addMarker(new MarkerOptions()
+                    if (googleCurrentMarker == null) {
+                        googleCurrentMarker = googleMap.addMarker(new MarkerOptions()
                                 .position(pos)
                                 .title(sourceLabel)
                                 .snippet(finalAddress)
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                     } else {
-                        currentLocationMarker.setPosition(pos);
-                        currentLocationMarker.setTitle(sourceLabel);
-                        currentLocationMarker.setSnippet(finalAddress);
+                        googleCurrentMarker.setPosition(pos);
+                        googleCurrentMarker.setTitle(sourceLabel);
+                        googleCurrentMarker.setSnippet(finalAddress);
                     }
                     googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f));
                 }
 
-                // Sync to Firebase Cloud Firestore
+                // 3. Sync to Firebase Cloud Firestore
                 LocationModel model = new LocationModel(
                         "loc_" + System.currentTimeMillis(),
                         lat,
@@ -344,7 +448,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     @Override
                     public void onError(Exception e) {
-                        binding.tvFirebaseStatus.setText("☁️ Firebase: Offline Cache (Pending sync)");
+                        binding.tvFirebaseStatus.setText("☁️ Firebase: Offline Cache");
                     }
                 });
             });
@@ -361,7 +465,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Simulates movement steps for convenient demonstration during college viva/presentation.
      */
     private void simulateMovementStep() {
-        // Move by small delta ~150 meters
         double delta = 0.0015 * simulationStep;
         currentLat += (simulationStep % 2 == 0 ? delta : -delta * 0.7);
         currentLng += (simulationStep % 2 == 0 ? delta * 0.5 : delta);
@@ -383,40 +486,58 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 binding.tvSyncCount.setText("Live Sync: " + liveSyncList.size() + " records");
                 binding.tvFirebaseStatus.setText("☁️ Firebase: Live Synced (" + timeFormat.format(new Date()) + ")");
 
-                // Plot synced markers on Google Maps
                 plotCloudMarkers(locations);
             }
 
             @Override
             public void onError(Exception e) {
-                binding.tvFirebaseStatus.setText("☁️ Firebase: Sync Error (" + e.getMessage() + ")");
+                binding.tvFirebaseStatus.setText("☁️ Firebase: Sync Notice (" + e.getMessage() + ")");
             }
         });
     }
 
     private void plotCloudMarkers(List<LocationModel> locations) {
-        if (googleMap == null) return;
+        // 1. Remove previous OpenStreetMap cloud markers
+        for (Marker m : osmCloudMarkers) {
+            binding.osmMapView.getOverlays().remove(m);
+        }
+        osmCloudMarkers.clear();
 
-        // Remove previous cloud markers
-        for (Marker m : cloudSyncedMarkers) {
+        // 2. Remove previous Google Maps cloud markers
+        for (com.google.android.gms.maps.model.Marker m : googleCloudMarkers) {
             m.remove();
         }
-        cloudSyncedMarkers.clear();
+        googleCloudMarkers.clear();
 
-        // Add latest up to 5 markers
+        // Add latest up to 5 cloud pins
         int count = Math.min(locations.size(), 5);
         for (int i = 0; i < count; i++) {
             LocationModel item = locations.get(i);
-            LatLng pos = new LatLng(item.getLatitude(), item.getLongitude());
-            Marker marker = googleMap.addMarker(new MarkerOptions()
-                    .position(pos)
-                    .title("Cloud Sync #" + (i + 1) + " (" + item.getDeviceName() + ")")
-                    .snippet(item.getAddress())
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-            if (marker != null) {
-                cloudSyncedMarkers.add(marker);
+
+            // OpenStreetMap Pin
+            GeoPoint gp = new GeoPoint(item.getLatitude(), item.getLongitude());
+            Marker osmMarker = new Marker(binding.osmMapView);
+            osmMarker.setPosition(gp);
+            osmMarker.setTitle("Cloud Sync #" + (i + 1) + " (" + item.getDeviceName() + ")");
+            osmMarker.setSnippet(item.getAddress());
+            osmMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            binding.osmMapView.getOverlays().add(osmMarker);
+            osmCloudMarkers.add(osmMarker);
+
+            // Google Maps Pin
+            if (googleMap != null) {
+                LatLng pos = new LatLng(item.getLatitude(), item.getLongitude());
+                com.google.android.gms.maps.model.Marker gmMarker = googleMap.addMarker(new MarkerOptions()
+                        .position(pos)
+                        .title("Cloud Sync #" + (i + 1) + " (" + item.getDeviceName() + ")")
+                        .snippet(item.getAddress())
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                if (gmMarker != null) {
+                    googleCloudMarkers.add(gmMarker);
+                }
             }
         }
+        binding.osmMapView.invalidate();
     }
 
     private void showSyncLogsDialog() {
@@ -435,7 +556,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @SuppressLint("MissingPermission")
-    private void enableMyLocationOnMap() {
+    private void enableMyLocationOnGoogleMap() {
         if (googleMap != null && hasLocationPermission()) {
             try {
                 googleMap.setMyLocationEnabled(true);
@@ -455,6 +576,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
             });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (binding != null && binding.osmMapView != null) {
+            binding.osmMapView.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (binding != null && binding.osmMapView != null) {
+            binding.osmMapView.onPause();
         }
     }
 

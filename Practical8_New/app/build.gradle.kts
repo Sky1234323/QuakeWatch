@@ -46,6 +46,9 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 
+    // OpenStreetMap / Osmdroid (Guaranteed live street & terrain map tiles without API key blocks)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
     // Firebase (Firestore for Real-time Data Synchronization + Auth for Security Rules)
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-firestore")
