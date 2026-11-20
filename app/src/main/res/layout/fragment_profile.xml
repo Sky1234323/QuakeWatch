@@ -301,7 +301,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
                     android:lineSpacingExtra="3dp"
-                    android:text="Data Source: USGS Earthquake Hazards Program (QuakeML)\nMap Tiles: OpenStreetMap contributors &amp; CARTO\nAI Intelligence: Google Gemini 3.5 Flash\nAcademic Project: Mobile Application Development (Akash)\nVersion: 1.0 (Build 2026)"
+                    android:text="Data Source: USGS Earthquake Hazards Program (QuakeML)\nMap Tiles: OpenStreetMap contributors &amp; CARTO\nAI Intelligence: Google Gemini 3.5 Flash\nAcademic Project: Mobile Application Development (HalfBaked Banana)\nVersion: 1.0 (Build 2026)"
                     style="@style/QW.Text.BodySecondary"
                     android:textSize="13sp" />
             </LinearLayout>
