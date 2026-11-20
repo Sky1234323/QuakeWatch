@@ -1,0 +1,267 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Mobile Application Development}
+\rhead{Practical 8}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red!60!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  rulecolor=\color{gray!60},
+  backgroundcolor=\color{gray!6},
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=18pt
+}
+\lstset{style=code}
+
+\newcommand{\shot}[3][0.35]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{#2}{%
+      \includegraphics[width=#1\textwidth]{#2}%
+    }{%
+      \fbox{\parbox{0.6\textwidth}{\centering\vspace{3cm}Screenshot not found:\\\texttt{#2}\vspace{3cm}}}%
+    }
+    \caption{#3}
+  \end{figure}
+}
+
+\setlength{\headheight}{14.49998pt}
+\begin{document}
+
+\begin{center}
+  {\LARGE \textbf{Practical No.\ 8}}\\[6pt]
+  {\Large \textbf{Real-Time Location Service and Maps with Firebase Data Sync}}\\[6pt]
+  {\large Mobile Application Development (Android, Java)}
+\end{center}
+
+\vspace{4pt}
+\hrule
+\vspace{8pt}
+
+\noindent
+\begin{tabular}{@{}ll}
+  \textbf{Name}            & : Akash A Barage \\
+  \textbf{PRN}             & : 202401120075 \\
+  \textbf{Class / Division}& : Data Science(A3) \\
+  \textbf{Date}            & : 20/11/2026 \\
+\end{tabular}
+
+\vspace{8pt}
+\hrule
+
+\section*{Aim}
+\begin{enumerate}[itemsep=2pt]
+  \item To build a Java-based Android application utilizing Google Maps to display real-time device location and interactive markers.
+  \item To implement real-time bidirectional data synchronization using Google Firebase Firestore to stream and visualize location updates across cloud instances.
+\end{enumerate}
+
+\section*{Tools and Technologies}
+\begin{itemize}[itemsep=2pt]
+  \item Android Studio, Java (Java 11), Android SDK (API 24 to 37)
+  \item Google Play Services Location API (\texttt{FusedLocationProviderClient}, \texttt{LocationRequest}, \texttt{LocationCallback})
+  \item Google Maps SDK for Android (\texttt{SupportMapFragment}, \texttt{GoogleMap}, \texttt{MarkerOptions})
+  \item Google Firebase Cloud Firestore (\texttt{FirebaseFirestore}, \texttt{addSnapshotListener})
+  \item Android Native \texttt{Geocoder} for reverse-geocoding coordinates into human-readable postal addresses
+  \item Material 3 Components, ViewBinding, and Background Executors
+\end{itemize}
+
+\section*{Theory}
+
+\subsection*{1. Fused Location Provider Client}
+Google Play Services provides the \texttt{FusedLocationProviderClient}, which combines GPS, Wi-Fi, cellular networks, and device sensors to calculate optimal device coordinates. Using \texttt{Priority.PRIORITY\_HIGH\_ACCURACY}, it delivers sub-meter precision while optimizing battery consumption compared to the legacy \texttt{LocationManager}.
+
+\subsection*{2. Runtime Location Permissions}
+Beginning with Android 6.0 (API 23), dangerous permissions must be requested at runtime. Android requires \texttt{ACCESS\_FINE\_LOCATION} for precise satellite coordinates and \texttt{ACCESS\_COARSE\_LOCATION} for network-derived estimates.
+
+\subsection*{3. Google Maps Android SDK}
+Google Maps renders interactive vector maps inside an Android layout through a \texttt{SupportMapFragment}. When the map finishes asynchronous initialization, the \texttt{onMapReady(GoogleMap)} callback allows adding markers, polyline paths, custom map styles (Normal vs.\ Satellite), and camera animations via \texttt{CameraUpdateFactory}.
+
+\subsection*{4. Reverse Geocoding}
+Reverse geocoding converts latitude and longitude coordinates into human-readable geographic locations (street name, city, state, country) using Android's native \texttt{Geocoder}. Because geocoding requires a network round-trip, it must be performed on a worker thread.
+
+\subsection*{5. Real-Time Data Sync with Firebase Firestore}
+Firebase Cloud Firestore is a NoSQL cloud database designed for mobile applications. By attaching a real-time snapshot listener (\texttt{addSnapshotListener}), the client receives automatic, push-based updates whenever remote documents are inserted or modified, achieving seamless real-time multi-device synchronization without polling.
+
+\section*{Procedure}
+
+\subsection*{Part 1: Location Tracking \& Map Rendering}
+\begin{enumerate}[itemsep=3pt]
+  \item Configured \texttt{build.gradle.kts} with \texttt{play-services-location}, \texttt{play-services-maps}, and \texttt{firebase-firestore}.
+  \item Declared \texttt{ACCESS\_FINE\_LOCATION}, \texttt{ACCESS\_COARSE\_LOCATION}, and \texttt{INTERNET} in \texttt{AndroidManifest.xml}.
+  \item Embedded a \texttt{SupportMapFragment} inside \texttt{activity\_main.xml} alongside Material 3 cards for displaying coordinates and cloud status.
+  \item Initialized \texttt{FusedLocationProviderClient} and requested runtime permissions using \texttt{ActivityResultContracts.RequestMultiplePermissions}.
+  \item Fetched immediate coordinates via \texttt{getCurrentLocation()} and started continuous streaming using \texttt{requestLocationUpdates()}.
+  \item Converted geographic coordinates into city/state text using \texttt{Geocoder} on an \texttt{ExecutorService} thread.
+\end{enumerate}
+
+\subsection*{Part 2: Real-Time Firebase Sync}
+\begin{enumerate}[itemsep=3pt]
+  \item Initialized \texttt{FirebaseFirestore} with cloud credentials.
+  \item Packaged location fixes into \texttt{LocationModel} and uploaded to collection \texttt{practical8\_locations}.
+  \item Implemented \texttt{startRealtimeListener()} using \texttt{Query.addSnapshotListener} to observe new location entries.
+  \item Plotted cloud-synchronized location markers directly onto the Google Map with distinct red markers.
+  \item Provided a "Simulate Movement / Add Pin" feature allowing instant demonstration during viva evaluation.
+  \item Created a synchronized logs dialog showing real-time timestamps and device metadata.
+\end{enumerate}
+
+\section*{Source Code}
+
+\subsection*{LocationModel.java}
+\begin{lstlisting}[language=Java]
+package com.akash.practical8_new.model;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class LocationModel {
+    private String id;
+    private double latitude;
+    private double longitude;
+    private float accuracy;
+    private String address;
+    private long timestamp;
+    private String deviceName;
+
+    public LocationModel() {}
+
+    public LocationModel(String id, double latitude, double longitude, float accuracy, 
+                         String address, long timestamp, String deviceName) {
+        this.id = id;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.accuracy = accuracy;
+        this.address = address != null ? address : "Unknown Location";
+        this.timestamp = timestamp;
+        this.deviceName = deviceName != null ? deviceName : "Android Device";
+    }
+
+    public double getLatitude() { return latitude; }
+    public double getLongitude() { return longitude; }
+    public float getAccuracy() { return accuracy; }
+    public String getAddress() { return address; }
+    public long getTimestamp() { return timestamp; }
+    public String getDeviceName() { return deviceName; }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("latitude", latitude);
+        map.put("longitude", longitude);
+        map.put("accuracy", accuracy);
+        map.put("address", address);
+        map.put("timestamp", timestamp);
+        map.put("deviceName", deviceName);
+        return map;
+    }
+}
+\end{lstlisting}
+
+\subsection*{FirebaseSyncHelper.java}
+\begin{lstlisting}[language=Java]
+package com.akash.practical8_new.firebase;
+
+import android.content.Context;
+import com.akash.practical8_new.model.LocationModel;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+
+public class FirebaseSyncHelper {
+    private static final String COLLECTION = "practical8_locations";
+    private final FirebaseFirestore firestore;
+    private ListenerRegistration registration;
+
+    public FirebaseSyncHelper(Context context) {
+        FirebaseApp app;
+        try {
+            app = FirebaseApp.getInstance("Practical8Firebase");
+        } catch (IllegalStateException e) {
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setApplicationId("1:64073902603:android:b17abba583119bb1c6f50e")
+                    .setApiKey("AIzaSyCwPoEv7b2eBxkjtkNtULrRjNfrL16W3vc")
+                    .setProjectId("quakewatch-2fe83")
+                    .build();
+            app = FirebaseApp.initializeApp(context.getApplicationContext(), options, "Practical8Firebase");
+        }
+        this.firestore = FirebaseFirestore.getInstance(app);
+    }
+
+    public void syncLocation(LocationModel location) {
+        if (location == null) return;
+        firestore.collection(COLLECTION).document("live_device").set(location.toMap());
+        firestore.collection(COLLECTION).document("loc_" + System.currentTimeMillis()).set(location.toMap());
+    }
+
+    public void startRealtimeListener(OnUpdateCallback callback) {
+        registration = firestore.collection(COLLECTION)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(20)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e == null && snapshots != null) {
+                        callback.onUpdate(snapshots.toObjects(LocationModel.class));
+                    }
+                });
+    }
+
+    public void stopRealtimeListener() {
+        if (registration != null) registration.remove();
+    }
+}
+\end{lstlisting}
+
+\section*{Viva Examination Questions and Answers}
+
+\begin{enumerate}[label=\textbf{Q\arabic*.},leftmargin=*]
+  \item \textbf{What is the difference between \texttt{ACCESS\_FINE\_LOCATION} and \texttt{ACCESS\_COARSE\_LOCATION}?}
+  
+  \textbf{Answer:} \texttt{ACCESS\_FINE\_LOCATION} gives precise device coordinates within a few meters using GPS satellite signals, cellular towers, and Wi-Fi networks. \texttt{ACCESS\_COARSE\_LOCATION} yields an approximate location within an area roughly equivalent to a city block (about 300 to 500 meters) using cell tower triangulation and Wi-Fi.
+
+  \item \textbf{Why is \texttt{FusedLocationProviderClient} preferred over the traditional \texttt{LocationManager}?}
+  
+  \textbf{Answer:} \texttt{FusedLocationProviderClient} automatically manages multiple underlying location technologies (GPS, Wi-Fi, Cell ID, accelerometer), balancing high accuracy and low battery consumption. It also abstracts hardware differences across Android OEMs and handles background power optimizations automatically.
+
+  \item \textbf{How does Firebase Firestore provide real-time data synchronization?}
+  
+  \textbf{Answer:} Firestore uses persistent WebSockets/gRPC streaming connections to establish bidirectional communication between client and cloud. When \texttt{addSnapshotListener} is attached, any database mutation triggers immediate push notifications from the server to the client without repetitive client-side HTTP polling.
+
+  \item \textbf{What is reverse geocoding, and why must it run on a worker thread?}
+  
+  \textbf{Answer:} Reverse geocoding is the process of translating numerical latitude and longitude coordinates into human-readable geographic locations (e.g., street name, city, postal code). Because it requires an external network lookup via Android's backend Geocoder service, running it on the main thread would block UI rendering and trigger a \texttt{NetworkOnMainThreadException} or ANR (Application Not Responding).
+
+  \item \textbf{How does offline persistence work in Firebase Firestore?}
+  
+  \textbf{Answer:} Firestore includes a local SQLite/LevelDB cache on the device. Read and write operations are executed against the local cache immediately, and changes are queued. When internet connectivity is restored, Firestore automatically synchronizes local modifications with the cloud database.
+\end{enumerate}
+
+\section*{Conclusion}
+Practical No.\ 8 was successfully implemented in pure Java. The application delivers robust real-time device location updates via \texttt{FusedLocationProviderClient}, renders interactive markers and map tiles using the Google Maps SDK, and synchronizes real-time coordinates bidirectionally with Google Firebase Firestore.
+
+\end{document}
