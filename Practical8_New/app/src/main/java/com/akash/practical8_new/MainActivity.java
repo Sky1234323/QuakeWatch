@@ -45,8 +45,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.util.MapTileIndex;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
@@ -61,11 +64,44 @@ import java.util.concurrent.Executors;
 
 /**
  * Practical No. 08: Real-time Location Service and Maps with Firebase Data Sync.
- * Supports dual-engine map rendering (OpenStreetMap for guaranteed live tiles without key restrictions + Google Maps SDK).
+ * Supports multiple high-resolution worldwide map layers:
+ * 1. Streets (Standard OSM)
+ * 2. True Satellite Imagery (Esri World Imagery)
+ * 3. Topographic Relief (OpenTopoMap)
+ * 4. Dark Night Mode (CartoDB Dark Matter)
+ * 5. Google Maps SDK Support
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private static final String TAG = "Practical8_Main";
+
+    // 1. Worldwide True Satellite Imagery (Works in India, Alandi, Pune, & Globally)
+    public static final OnlineTileSourceBase ESRI_SATELLITE = new OnlineTileSourceBase(
+            "EsriSatellite",
+            0, 19, 256, "",
+            new String[]{"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"},
+            "© Esri, Maxar, Earthstar Geographics"
+    ) {
+        @Override
+        public String getTileURLString(long pMapTileIndex) {
+            return getBaseUrl()
+                    + MapTileIndex.getZoom(pMapTileIndex) + "/"
+                    + MapTileIndex.getY(pMapTileIndex) + "/"
+                    + MapTileIndex.getX(pMapTileIndex);
+        }
+    };
+
+    // 2. High-Tech Dark Mode / Night Map (CartoDB Dark Matter)
+    public static final XYTileSource CARTO_DARK = new XYTileSource(
+            "CartoDark",
+            0, 19, 256, ".png",
+            new String[]{
+                    "https://a.basemaps.cartocdn.com/dark_all/",
+                    "https://b.basemaps.cartocdn.com/dark_all/",
+                    "https://c.basemaps.cartocdn.com/dark_all/"
+            },
+            "© CartoDB, © OpenStreetMap"
+    );
 
     private ActivityMainBinding binding;
     private GoogleMap googleMap;
@@ -88,11 +124,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private boolean isTrackingEnabled = false;
     private boolean isGoogleMapActive = false;
-    private boolean isTopoTileActive = false;
 
     // Default coordinates (Alandi / Pune region from user device)
-    private double currentLat = 18.6722;
-    private double currentLng = 73.8882;
+    private double currentLat = 18.67226;
+    private double currentLng = 73.88818;
     private float currentAccuracy = 10.0f;
     private int simulationStep = 1;
 
@@ -106,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     enableMyLocationOnGoogleMap();
                     fetchCurrentLocation();
                 } else {
-                    Toast.makeText(this, "Location permission denied. Using cached location.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Location permission denied. Using current location.", Toast.LENGTH_LONG).show();
                     updateLocationDisplay(currentLat, currentLng, 15.0f, "Alandi, Maharashtra, India");
                 }
             });
@@ -115,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. Initialize Osmdroid Configuration before inflating layout
+        // Initialize Osmdroid Configuration before inflating layout
         Configuration.getInstance().setUserAgentValue("Practical8/" + BuildConfig.VERSION_NAME + " (Android College Practical)");
         Configuration.getInstance().load(this, getSharedPreferences("osmdroid_p8", Context.MODE_PRIVATE));
 
@@ -140,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         binding.osmMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
 
         GeoPoint startPoint = new GeoPoint(currentLat, currentLng);
-        binding.osmMapView.getController().setZoom(16.0);
+        binding.osmMapView.getController().setZoom(16.5);
         binding.osmMapView.getController().setCenter(startPoint);
 
         osmCurrentMarker = new Marker(binding.osmMapView);
@@ -238,53 +273,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        // 3. Simulate Movement / Add Pin Button (Useful for viva presentation)
+        // 3. Simulate Movement / Add Pin Button
         binding.btnSimulatePin.setOnClickListener(v -> simulateMovementStep());
 
-        // 4. Toggle Map Engine (OpenStreetMap with 100% working live tiles vs Google Maps SDK)
-        binding.btnToggleMapEngine.setOnClickListener(v -> {
-            isGoogleMapActive = !isGoogleMapActive;
-            if (isGoogleMapActive) {
-                binding.googleMapContainer.setVisibility(View.VISIBLE);
-                binding.osmMapView.setVisibility(View.GONE);
-                binding.btnToggleMapEngine.setText("Live Street Tiles");
-                if (googleMap != null) {
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 15f));
-                }
-            } else {
-                binding.googleMapContainer.setVisibility(View.GONE);
-                binding.osmMapView.setVisibility(View.VISIBLE);
-                binding.btnToggleMapEngine.setText("Google Maps SDK");
-                binding.osmMapView.getController().animateTo(new GeoPoint(currentLat, currentLng));
-            }
-        });
+        // 4. Map Layer Chip Group (Streets, Satellite, Topo, Dark, Google Maps)
+        binding.chipGroupMapType.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds == null || checkedIds.isEmpty()) return;
+            int checkedId = checkedIds.get(0);
 
-        // 5. Map Type / Terrain Toggle
-        binding.btnMapType.setOnClickListener(v -> {
-            if (isGoogleMapActive) {
-                if (googleMap != null) {
-                    if (googleMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
-                        googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                        binding.btnMapType.setText("Normal");
-                    } else {
-                        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                        binding.btnMapType.setText("Satellite");
-                    }
-                }
-            } else {
-                isTopoTileActive = !isTopoTileActive;
-                if (isTopoTileActive) {
-                    binding.osmMapView.setTileSource(TileSourceFactory.USGS_TOPO);
-                    binding.btnMapType.setText("Streets");
-                } else {
-                    binding.osmMapView.setTileSource(TileSourceFactory.MAPNIK);
-                    binding.btnMapType.setText("Topo / Terrain");
-                }
+            if (checkedId == R.id.chip_streets) {
+                showOsmMap();
+                binding.osmMapView.setTileSource(TileSourceFactory.MAPNIK);
                 binding.osmMapView.invalidate();
+                Toast.makeText(this, "Streets Map loaded", Toast.LENGTH_SHORT).show();
+            } else if (checkedId == R.id.chip_satellite) {
+                showOsmMap();
+                binding.osmMapView.setTileSource(ESRI_SATELLITE);
+                binding.osmMapView.invalidate();
+                Toast.makeText(this, "Satellite Imagery loaded", Toast.LENGTH_SHORT).show();
+            } else if (checkedId == R.id.chip_topo) {
+                showOsmMap();
+                binding.osmMapView.setTileSource(TileSourceFactory.getTileSource("OpenTopoMap"));
+                binding.osmMapView.invalidate();
+                Toast.makeText(this, "Topographic Terrain loaded", Toast.LENGTH_SHORT).show();
+            } else if (checkedId == R.id.chip_dark) {
+                showOsmMap();
+                binding.osmMapView.setTileSource(CARTO_DARK);
+                binding.osmMapView.invalidate();
+                Toast.makeText(this, "Dark Night Map loaded", Toast.LENGTH_SHORT).show();
+            } else if (checkedId == R.id.chip_google) {
+                showGoogleMap();
+                Toast.makeText(this, "Google Maps SDK active", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // 6. Recenter FAB
+        // 5. Recenter FAB
         binding.fabMyLocation.setOnClickListener(v -> {
             GeoPoint osmPoint = new GeoPoint(currentLat, currentLng);
             binding.osmMapView.getController().animateTo(osmPoint);
@@ -295,8 +318,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        // 7. View Firebase Sync Logs Dialog
+        // 6. View Firebase Sync Logs Dialog
         binding.btnViewLogs.setOnClickListener(v -> showSyncLogsDialog());
+    }
+
+    private void showOsmMap() {
+        isGoogleMapActive = false;
+        binding.googleMapContainer.setVisibility(View.GONE);
+        binding.osmMapView.setVisibility(View.VISIBLE);
+        binding.osmMapView.getController().animateTo(new GeoPoint(currentLat, currentLng));
+    }
+
+    private void showGoogleMap() {
+        isGoogleMapActive = true;
+        binding.googleMapContainer.setVisibility(View.VISIBLE);
+        binding.osmMapView.setVisibility(View.GONE);
+        if (googleMap != null) {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 15f));
+        }
     }
 
     private void initLocationCallback() {
@@ -335,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 currentAccuracy = lastLoc.getAccuracy();
                                 geocodeAndSync(currentLat, currentLng, currentAccuracy, "Last Known Fix");
                             } else {
-                                geocodeAndSync(currentLat, currentLng, 10.0f, "Default Location Fix");
+                                geocodeAndSync(currentLat, currentLng, 10.0f, "Alandi, Maharashtra");
                             }
                         });
                     }
@@ -391,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             } catch (Exception e) {
                 Log.w(TAG, "Geocoder notice: " + e.getMessage());
-                resolvedAddress = String.format(Locale.US, "Alandi / Pune Region (%.4f° N, %.4f° E)", lat, lng);
+                resolvedAddress = String.format(Locale.US, "Alandi, Maharashtra, India (%.4f° N, %.4f° E)", lat, lng);
             }
 
             final String finalAddress = resolvedAddress;
